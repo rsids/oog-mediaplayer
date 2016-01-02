@@ -6,10 +6,10 @@ echo <<<OOG
             Download the file <a href="{$media->url}">here</a>
             </audio>
         <a class="play-pause-button" data-src="{$media->url}">
-            <span class="timer"></span>
-            <span>{$media->title}&nbsp;<span>
+            <span class="oog-player-audio-title">{$media->title}</span>
+            <span class="oog-player-audio-timer"></span>
         </a>
-        <div class="duration">
+        <div class="oog-player-audio-duration">
             <div class="buffered"></div>
             <div class="progress"></div>
         </div>
