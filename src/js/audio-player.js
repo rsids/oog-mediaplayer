@@ -1,5 +1,4 @@
 (function($) {
-    console.log("INIT PLAYER");
 	var players,
         player,
         current,
@@ -9,8 +8,9 @@
 	$(document).ready(function() {
 
 		players = document.querySelectorAll('div.oog-player-audio audio');
-		if(!players)
+		if(!players) {
 			return;
+		}
         var numPlayers = players.length;
 
         while(--numPlayers >= 0) {
@@ -19,7 +19,7 @@
             player.addEventListener('durationchange', function(evt) {
                 var container = getContainer(evt.currentTarget);
                 $(container).attr('duration', evt.currentTarget.duration);
-                $('.timer', container).text(formatTime(evt.currentTarget.duration));
+                $('.oog-player-audio-timer', container).text(formatTime(evt.currentTarget.duration));
             });
 
             player.addEventListener('progress', function(evt) {
@@ -37,7 +37,7 @@
 
                 if(currentFormatted !== formatTime(current)) {
                     currentFormatted = formatTime(current);
-                    $('.timer', container).text(currentFormatted);
+                    $('.oog-player-audio-timer', container).text(currentFormatted);
                 }
             });
             player.addEventListener('ended', function() {
@@ -47,6 +47,12 @@
             player.addEventListener('play', function() {
                 animFrame = requestAnimFrame(updateSeekBar);
             });
+
+			// Get title if not set
+			var container = getContainer(player);
+			if(container.querySelector('.oog-player-audio-title').textContent === '') {
+            	getTitle(player.src, container);
+			}
         }
 
 
@@ -63,28 +69,23 @@
             } else {
                 player.pause();
             }
-            //
-			//player.pause();
-			//duration = 0;
-			//current = 0;
-			//player.src = evt.currentTarget.getAttribute('data-src');
-			//player.play();
-			//$('.missed-radio-item').removeClass('active');
-			//$(evt.currentTarget).parent().addClass('pause active');
 
 		});
 
-		$('.filter-results').on('click', '.active .duration', seek);
+		$('.oog-player-audio').on('click', '.oog-player-audio-duration', seek);
 
 	});
 
-	function seek(e) {
-		var pos = e.offsetX / e.currentTarget.clientWidth;
+	function seek(evt) {
+		var container = getContainer(evt.currentTarget),
+            pos = evt.offsetX / evt.currentTarget.clientWidth;
 
-		if(pos < 0 || pos > 1)
+        if(pos < 0 || pos > 1) {
 			return;
+        }
 
-		player.currentTime = duration * pos;
+        player = $('audio', container)[0];
+		player.currentTime = parseFloat($(container).attr('duration')) * pos;
 	}
 
 	function updateSeekBar() {
@@ -100,6 +101,16 @@
 
     function getContainer(item) {
         return $(item).closest('div.oog-player-audio');
+    }
+
+    function getTitle(url, container) {
+        var data = {
+            action: 'oog_media_player_get_audio_title',
+            file: url
+        };
+        $.post('/wp-admin/admin-ajax.php', data).success(function(title) {
+            $('.oog-player-audio-title', container).text(title);
+        });
     }
 
     function formatTime(time) {
